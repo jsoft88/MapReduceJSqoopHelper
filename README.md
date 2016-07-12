@@ -3,7 +3,7 @@ Library for spliting data imported with sqoop before exporting.
 <br/><br/>
 This is a great tool when data is imported with sqoop from a RDBMS to Hadoop, and later inserted from hadoop into a different RDBMS.
 It is well known sqoop allows an entire file to be inserted into a table in RDBMS, but there isn't a way to split data to be exported
-based on conditions.
+based on conditions. In order to apply conditions, it performs <b>bytecode engineering</b> which allows a class to be generated on runtime and filters are applied upon this newly generated class. This removes the need to use different tools for generating classes from schemas. However, interfaces provided by <a href="https://github.com/jsoft88/JCClassBuilder">JCClassBuilder</a> must be implemented for every file format. Once this is done, include it inside this tool and have your data filtered before exporting with Sqoop.
 
 So for example, if we have 125 files to be inserted into tables A, B, and C based on certain conditions, we could run this tool 
 as follows:<br/><br/>
@@ -16,7 +16,8 @@ Basically, the tool expects 7 arguments, which are described below:
 <li>&lt;file_containing_json_schema&gt;: a file containing a schema in json.</li>
 <li>&lt;absolute_path_of_class_file&gt;: absolute path where generated .class file will be written to.</li> 
 <li>&lt;absolute_path_of_.java_file&gt;: absolute path where .java source file of generated class will be written to.</li>
-<li>&lt;field_to_apply_condition_on,<b>operator</b>,<b>value</b>,<b>absolute_path_of_output_file</b>,<b>cast_to</b>;...;&lt;last_condition_tuple&gt;: This is a list of tuples separated by semi-colon. On the other hand, tuple elements are separated by commas.
+<li>&lt;field_to_apply_condition_on,<b>operator</b>,<b>value</b>,<b>absolute_path_of_output_file</b>,<b>cast_to</b>;...;&lt;last_condition_tuple&gt;: This is a list of tuples separated by semi-colon. On the other hand, tuple elements are separated by commas. All tuples
+containing the same output file are AND-ed. There's no way to include conjuctions or disjunctions in condition tuples. Thus, if you have two tuples which output to file1.avro, then these two tuples will be AND-ed.
   <ul>
     <li>field_to_apply_condition_on: this has to be a field inside schema and it must match exactly the name of the field. So for example, if the schema has a field Name: String, this field must be called Name. Using name or NAME will not work.</li>
     <li>operator: The available operators are the following: lt (less than), le (less than or equals), eq (equals), gt (greater than) or ge (greater than or equals)</li>
